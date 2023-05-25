@@ -1,20 +1,44 @@
 import Helpers from '../helpers'
 import Users from '../models/modelUsers'
-const create = (req: any, res: any) => {
-      Users.create({
-            username: "admin",
-            password: "123"
-      }).then(() =>{
+import val from '../reqValidation'
 
-            Helpers.Response.api(res, 200, 
-                  "Successfully Added User."      
+const create = async (req: any, res: any) => {
+      var createInput = req.body;
+      var checkVal = await val.valUsers.create(createInput);
+      
+      if(checkVal.status)
+      {
+            var createUser  = await Users.create(createInput);
+
+            Helpers.Response.api(res, createUser.code, 
+                  createUser.msg
             , []);
-
-      }).catch(() => {
+      }
+      else
+      { 
             Helpers.Response.api(res, 404, 
-                  "Error"      
+                  checkVal.msg
             , []);
-      });
+      }
 };
 
-export default { create }
+const auth = async (req: any, res: any) => {
+      var authInput = req.body;
+      var checkVal = await val.valUsers.auth(authInput);
+      if(checkVal.status) 
+      {
+            var checkAuth  = await Users.auth(authInput);
+
+            Helpers.Response.api(res, checkAuth.code, 
+                  checkAuth.msg
+            , [checkAuth.data]);
+      }
+      else
+      {
+            Helpers.Response.api(res, 404, 
+                  checkVal.msg
+            , []);
+      }
+}
+      
+export default { create, auth }
